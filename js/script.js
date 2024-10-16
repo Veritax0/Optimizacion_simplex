@@ -1,5 +1,4 @@
 document.getElementById('submitBtn').addEventListener('click', function() {
-    const operation = document.getElementById('operation').value;
     const totalVariables = document.getElementById('totalVariables').value;
     const totalRestricciones = document.getElementById('totalRestricciones').value;
     
@@ -14,10 +13,33 @@ document.getElementById('submitBtn').addEventListener('click', function() {
         return;
     }
 
-    // Create a new section for entering the linear function coefficients
+    // Create a new section for entering the linear function coefficients and the operation
     const newForm = document.createElement('form');
     newForm.className = 'linear-function-form';
-    newForm.innerHTML = `<h2>Ingrese los coeficientes de la función lineal</h2>`;
+    newForm.innerHTML = `<h2>Ingrese los coeficientes de la función lineal y seleccione la operación</h2>`;
+
+    // Add the "Operation" field
+    const operationLabel = document.createElement('label');
+    operationLabel.textContent = 'Operación: ';
+    operationLabel.htmlFor = 'operation';
+
+    const operationSelect = document.createElement('select');
+    operationSelect.id = 'operation';
+    operationSelect.name = 'operation';
+    const optionMax = document.createElement('option');
+    optionMax.value = 'maximizar';
+    optionMax.textContent = 'Maximizar';
+    const optionMin = document.createElement('option');
+    optionMin.value = 'minimizar';
+    optionMin.textContent = 'Minimizar';
+
+    operationSelect.appendChild(optionMax);
+    operationSelect.appendChild(optionMin);
+
+    // Append the operation field to the form
+    newForm.appendChild(operationLabel);
+    newForm.appendChild(operationSelect);
+    newForm.appendChild(document.createElement('br')); // Add a line break for spacing
 
     // Dynamically add input fields and labels to represent the linear function
     const equationContainer = document.createElement('div');
@@ -28,7 +50,7 @@ document.getElementById('submitBtn').addEventListener('click', function() {
         const coefficientInput = document.createElement('input');
         coefficientInput.type = 'number';
         coefficientInput.name = `coefficient${i}`;
-        // coefficientInput.placeholder = `Coeficiente ${i}`;
+        coefficientInput.placeholder = `Coeficiente ${i}`;
         coefficientInput.required = true;
         coefficientInput.style.width = '60px';
         coefficientInput.style.marginRight = '5px';
@@ -74,9 +96,12 @@ document.getElementById('submitBtn').addEventListener('click', function() {
         const formData = new FormData(newForm);
         let coefficients = [];
         for (let [key, value] of formData.entries()) {
-            coefficients.push(value);
+            if (key.startsWith('coefficient')) {
+                coefficients.push(value);
+            }
         }
-        alert(`Coeficientes ingresados: ${coefficients.join(', ')}`);
+        const operation = formData.get('operation');
+        alert(`Operación: ${operation}, Coeficientes ingresados: ${coefficients.join(', ')}`);
     });
 
     // Append the new form to the container
