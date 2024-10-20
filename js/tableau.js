@@ -1,14 +1,18 @@
-// Crea la tabla inicial del simplex (tableau)
 export function buildInitialTableau(c, A, b) {
-    const tableau = A.map((row, i) => [...row, b[i]]);
-    tableau.push([...c, 0]); // Agregar la fila Z (función objetivo)
+    const numRestricciones = A.length;
+    const identity = Array.from({ length: numRestricciones }, (_, i) =>
+        Array.from({ length: numRestricciones }, (_, j) => (i === j ? 1 : 0))
+    );
+
+    const tableau = A.map((row, i) => [...row, ...identity[i], b[i]]);
+    tableau.push([...c, ...Array(numRestricciones).fill(0), 0]);
+
     return tableau;
 }
 
-// Muestra una tabla de iteración en pantalla
-export function displaySimplexIteration(iteration, tableau) {
+export function displaySimplexTableau(iteration, tableau) {
     const resultDiv = document.getElementById('result');
-    resultDiv.innerHTML += `<h2>Iteración ${iteration}</h2>`;
+    resultDiv.innerHTML = `<h2>Iteración ${iteration}</h2>`;
 
     const table = document.createElement('table');
     tableau.forEach(row => {
