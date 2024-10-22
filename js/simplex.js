@@ -1,4 +1,5 @@
-import { buildInitialTableau, displaySimplexIteration } from './tableau.js';
+// Ejecuta el algoritmo simplex revisado hasta encontrar la solución
+import { buildInitialTableau, displaySimplexTableau } from './tableau.js';
 
 // Encuentra la columna entrante (la de mayor valor negativo en la fila Z)
 export function findEnteringColumn(tableau) {
@@ -44,29 +45,9 @@ export function pivot(tableau, pivotRow, pivotCol) {
     });
 }
 
-// Ejecuta el algoritmo simplex revisado hasta encontrar la solución
-export function solveSimplex(c, A, b) {
-    let tableau = buildInitialTableau(c, A, b);
-    let iteration = 0;
+export function solveSimplex(c, A, b, operation) {
+    const cAdjusted = operation === 'maximizar' ? c.map(coef => -coef) : [...c];
+    const tableau = buildInitialTableau(cAdjusted, A, b);
 
-    while (true) {
-        displaySimplexIteration(iteration, tableau);
-
-        const enteringCol = findEnteringColumn(tableau);
-        if (enteringCol === -1) {
-            console.log("Se ha encontrado la solución óptima.");
-            break;
-        }
-
-        const leavingRow = findLeavingRow(tableau, enteringCol);
-        if (leavingRow === -1) {
-            console.error("El problema no tiene solución acotada.");
-            break;
-        }
-
-        pivot(tableau, leavingRow, enteringCol);
-        iteration++;
-    }
-
-    return tableau;
+    displaySimplexTableau(0, tableau);
 }
