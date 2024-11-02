@@ -1,4 +1,5 @@
 import { solveSimplex } from './simplex.js';
+import { handleStepNavigation } from './stepNavigator.js';
 
 export function handleFormSubmit(event) {
     event.preventDefault();
@@ -16,7 +17,7 @@ export function handleFormSubmit(event) {
 
 function generarFormularioFuncionObjetivo(variables, restricciones) {
     const container = document.getElementById('def-funcion-objetivo');
-    container.innerHTML = '';
+    container.innerHTML = ''; 
 
     const form = document.createElement('form');
     form.className = 'linear-function-form';
@@ -29,24 +30,21 @@ function generarFormularioFuncionObjetivo(variables, restricciones) {
         </select>
     `;
 
-    // Create a table for the expression "Z = <input1> X_1 + <input2> X_2 + ..."
+    // Crear la tabla para la ecuación de la función objetivo
     const coefTable = document.createElement('table');
     coefTable.className = 'linear-function-table';
     const row = document.createElement('tr');
 
-    // Add the "Z" cell
+    // Añadir las celdas de "Z =", coeficientes, variables y "+"
     let zCell = document.createElement('td');
     zCell.textContent = 'Z';
     row.appendChild(zCell);
 
-    // Add the "=" cell
     let equalCell = document.createElement('td');
     equalCell.textContent = '=';
     row.appendChild(equalCell);
 
-    // Add input cells, variable cells, and "+" cells between them
     for (let i = 1; i <= variables; i++) {
-        // Create and append input cell
         const inputCell = document.createElement('td');
         const input = document.createElement('input');
         input.type = 'number';
@@ -56,12 +54,10 @@ function generarFormularioFuncionObjetivo(variables, restricciones) {
         inputCell.appendChild(input);
         row.appendChild(inputCell);
 
-        // Create and append variable cell (e.g., X1, X2)
         const variableCell = document.createElement('td');
         variableCell.textContent = `X_${i}`;
         row.appendChild(variableCell);
 
-        // Add "+" cell after each variable except the last one
         if (i < variables) {
             const plusCell = document.createElement('td');
             plusCell.textContent = '+';
@@ -69,9 +65,8 @@ function generarFormularioFuncionObjetivo(variables, restricciones) {
         }
     }
 
-    coefTable.appendChild(row); // Add the row to the table
-    form.appendChild(coefTable); // Append the table to the form
-
+    coefTable.appendChild(row);
+    form.appendChild(coefTable);
 
     const nextButton = document.createElement('button');
     nextButton.textContent = 'Continuar';
@@ -93,7 +88,7 @@ function generarFormularioFuncionObjetivo(variables, restricciones) {
 
 function generarFormularioRestricciones(restricciones, variables, coefficients, operation) {
     const container = document.getElementById('def-restricciones');
-    container.innerHTML = '';
+    container.innerHTML = ''; 
 
     const form = document.createElement('form');
 
@@ -101,14 +96,11 @@ function generarFormularioRestricciones(restricciones, variables, coefficients, 
         const restriccionDiv = document.createElement('div');
         restriccionDiv.innerHTML = `<h3>Restricción ${i}</h3>`;
 
-        // Create a table for each restriction
         const restriccionTable = document.createElement('table');
         restriccionTable.className = 'restriccion-table';
         const row = document.createElement('tr');
 
-        // Add input cells and variable labels
         for (let j = 1; j <= variables; j++) {
-            // Input cell
             const inputCell = document.createElement('td');
             const input = document.createElement('input');
             input.type = 'number';
@@ -118,13 +110,11 @@ function generarFormularioRestricciones(restricciones, variables, coefficients, 
             inputCell.appendChild(input);
             row.appendChild(inputCell);
 
-            // Variable label cell (e.g., X1, X2)
             const variableCell = document.createElement('td');
             variableCell.textContent = `X${j}`;
             row.appendChild(variableCell);
         }
 
-        // Dropdown menu cell for comparison operator
         const dropdownCell = document.createElement('td');
         const dropdown = document.createElement('select');
         dropdown.name = `operator${i}`;
@@ -137,7 +127,6 @@ function generarFormularioRestricciones(restricciones, variables, coefficients, 
         dropdownCell.appendChild(dropdown);
         row.appendChild(dropdownCell);
 
-        // RHS input cell
         const rhsCell = document.createElement('td');
         const rhsInput = document.createElement('input');
         rhsInput.type = 'number';
@@ -147,26 +136,22 @@ function generarFormularioRestricciones(restricciones, variables, coefficients, 
         rhsCell.appendChild(rhsInput);
         row.appendChild(rhsCell);
 
-        // Append row to the table and the table to restriccionDiv
         restriccionTable.appendChild(row);
         restriccionDiv.appendChild(restriccionTable);
         form.appendChild(restriccionDiv);
     }
 
-    // Add a submit button
     const solveButton = document.createElement('button');
     solveButton.textContent = 'Resolver';
     solveButton.type = 'submit';
     form.appendChild(solveButton);
-
-    container.appendChild(form);
 
     form.addEventListener('submit', (event) => {
         event.preventDefault();
         const formData = new FormData(form);
         const A = [];
         const b = [];
-
+    
         for (let i = 1; i <= restricciones; i++) {
             const row = [];
             for (let j = 1; j <= variables; j++) {
@@ -175,9 +160,25 @@ function generarFormularioRestricciones(restricciones, variables, coefficients, 
             A.push(row);
             b.push(parseFloat(formData.get(`rhs${i}`)));
         }
+    
+        // Llamar a solveSimplex y almacenar los pasos
+        const steps = solveSimplex(coefficients, A, b, operation);
 
-        solveSimplex(coefficients, A, b, operation);
+        if (!Array.isArray(steps)) {
+            console.error('La variable steps no es un array.');
+        } else if (steps.length > 0) {
+            handleStepNavigation(steps);
+        } else {
+            console.error('No se generaron pasos del método simplex.');
+        }
+        
+        if (steps.length > 0) {
+            handleStepNavigation(steps);  // Pasar los pasos para navegar entre ellos
+        } else {
+            console.error('No se generaron pasos del método simplex.');
+        }
     });
 
     container.appendChild(form);
 }
+
